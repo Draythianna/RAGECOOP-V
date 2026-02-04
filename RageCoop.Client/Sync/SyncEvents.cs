@@ -1,9 +1,11 @@
 ﻿using GTA;
 using GTA.Math;
 using GTA.Native;
+using LemonUI;
 using Lidgren.Network;
 using RageCoop.Core;
 using System;
+using System.Dynamic;
 
 namespace RageCoop.Client
 {
@@ -100,86 +102,10 @@ namespace RageCoop.Client
                 return;
             }
             Vector3 position = Game.Player.Character.Position;
-            float num = start.DistanceTo(position);
-            if (num > 1100f)
+            float num = start.DistanceToSquared(position);
+            if (num > 2500f)
             {
                 return;
-            }
-            int soundId = SoundIdPool.GetSoundId();
-            switch (weaponHash)
-            {
-                case 453432689u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Sniper_Fire", ped, "DLC_Biker_Resupply_Meet_Contact_Sounds", 0, 0);
-                    break;
-                case 4024951519u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 324215364u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 2210333304u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 3686625920u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot_Mic", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 3520460075u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 4211066955u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 1719023380u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Sniper_Fire", ped, "DLC_Biker_Resupply_Meet_Contact_Sounds", 0, 0);
-                    break;
-                case 651271362u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Sniper_Fire", ped, "DLC_Biker_Resupply_Meet_Contact_Sounds", 0, 0);
-                    break;
-                case 591011201u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 3731395622u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 3666787808u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 2277265522u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot_Mic", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 3194267307u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot_Mic", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 1440612366u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot_Mic", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 2040519480u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 392730790u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 3317718891u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                case 2815835192u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 4094436495u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 872155819u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Sniper_Fire", ped, "DLC_Biker_Resupply_Meet_Contact_Sounds", 0, 0);
-                    break;
-                case 1392305937u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
-                    break;
-                case 2067919506u:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
-                default:
-                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
-                    break;
             }
             switch (weaponHash)
             {
@@ -213,8 +139,8 @@ namespace RageCoop.Client
                     break;
             }
 
-            var p = EntityPool.GetPedByID(ownerID)?.MainPed;
-            if (p == null) { return; /* p = Game.Player.Character; Main.Logger.Warning("Failed to find owner for bullet"); */ }
+            
+            if (ped == null) { return; /* p = Game.Player.Character; Main.Logger.Warning("Failed to find owner for bullet"); */ }
             if (!CorePFXAsset.IsLoaded) { CorePFXAsset.Request(); }
             if (_lastWeaponHash != weaponHash)
             {
@@ -223,19 +149,67 @@ namespace RageCoop.Client
                 _lastWeaponHash = weaponHash;
             }
             if (!_weaponAsset.IsLoaded) { _weaponAsset.Request(); }
-            World.ShootSingleBullet(start, end, (int)p.GetWeaponDamage(weaponHash), _weaponAsset, p);
+
             Prop w;
-            if (((w = p.Weapons.CurrentWeaponObject) != null) && (p.VehicleWeapon == VehicleWeaponHash.Invalid))
+            if (((w = ped.Weapons.CurrentWeaponObject) != null) && (ped.VehicleWeapon == VehicleWeaponHash.Invalid))
             {
-                if (p.Weapons.Current.Components.GetSuppressorComponent().Active)
+                if (ped.Weapons.Current.Components.GetSuppressorComponent().Active)
                 {
-                    World.CreateParticleEffectNonLooped(CorePFXAsset, "muz_pistol_silencer", p.GetMuzzlePosition(), w.Rotation, 1);
+                    //play suppressed sound
+                    int soundId = SoundIdPool.GetSoundId();
+                    WeaponHash currentWeapon = (WeaponHash)weaponHash;
+                    switch (currentWeapon.GetWeaponGroup())
+                    {
+                        case WeaponGroup.Pistol:
+                        case WeaponGroup.Sniper:
+                        case WeaponGroup.Shotgun:
+                        case WeaponGroup.Thrown:
+                        case WeaponGroup.Heavy:
+                        case WeaponGroup.FireExtinguisher:
+                        case WeaponGroup.DigiScanner:
+                        case WeaponGroup.PetrolCan:
+                        case WeaponGroup.Unarmed:
+                        case WeaponGroup.Melee:
+                        case WeaponGroup.Stungun:
+                            break;//dont play gunshot sound for these weapons
+                        default:
+                            Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "FRANKLIN_GUN_MASTER", ped, 0, 0, 0);
+                            break;
+                    }
                 }
                 else
                 {
-                    World.CreateParticleEffectNonLooped(CorePFXAsset, WeaponUtil.GetFlashFX((WeaponHash)weaponHash), p.GetMuzzlePosition(), w.Rotation, 1);
+                    int soundId = SoundIdPool.GetSoundId();
+                    WeaponHash currentWeapon = (WeaponHash)weaponHash;
+                    switch (currentWeapon.GetWeaponGroup())
+                    {
+                     case WeaponGroup.Pistol:
+                     case WeaponGroup.Sniper:
+                     case WeaponGroup.Shotgun:
+                     case WeaponGroup.Thrown:
+                     case WeaponGroup.Heavy:
+                        case WeaponGroup.FireExtinguisher:
+                        case WeaponGroup.DigiScanner:
+                        case WeaponGroup.PetrolCan:
+                        case WeaponGroup.Unarmed:
+                        case WeaponGroup.Melee:
+                        case WeaponGroup.Stungun:
+                            break;//dont play gunshot sound for these weapons
+                default:
+                    Function.Call(Hash.PLAY_SOUND_FROM_ENTITY, soundId, "Pimp_Gunshot", ped, "CAR_STEAL_2_SOUNDSET", 0, 0);
+                    break;
+                     }
                 }
             }
+
+
+
+            
+            
+            Function.Call(Hash.SET_PED_SHOOTS_AT_COORD,ped,end.X,end.Y,end.Z,true);//much better method of syncing gunshots
+            
+            
+           
         }
         public static void HandleVehicleBulletShot(Packets.VehicleBulletShot p)
         {
