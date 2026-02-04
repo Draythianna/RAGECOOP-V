@@ -532,6 +532,10 @@ namespace RageCoop.Client
                         }
                     }
                     Function.Call(Hash.GIVE_WEAPON_OBJECT_TO_PED, _weaponObj, MainPed.Handle);
+                }//HYDRAXONN EDIT: Maybe fix unarmed never working?
+                else
+                { //player has switched to unarmed
+                    Function.Call(Hash.SET_CURRENT_PED_WEAPON, MainPed.Handle, WeaponHash.Unarmed, true);
                 }
                 _lastWeaponComponents = WeaponComponents;
             }
