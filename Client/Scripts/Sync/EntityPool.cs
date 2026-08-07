@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Metadata;
@@ -378,7 +378,7 @@ namespace RageCoop.Client
                         // event check
                         SyncEvents.Check(c);
 
-                        Networking.SendPed(c, i - pedStateIndex < pedStatesPerFrame);
+                        try { Networking.SendPed(c, i - pedStateIndex < pedStatesPerFrame); } catch { }
                     }
                     else // Incoming sync
                     {
