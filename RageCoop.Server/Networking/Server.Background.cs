@@ -81,7 +81,8 @@ namespace RageCoop.Server
             }
             if (!CanAnnounce)
             {
-                var existing = JsonConvert.DeserializeObject<List<ServerInfo>>(HttpHelper.DownloadString(Util.GetFinalRedirect(Settings.MasterServer))).Where(x => x.address == IpInfo.Address && x.port == Settings.Port.ToString()).FirstOrDefault();
+                var effectiveAddress = !string.IsNullOrWhiteSpace(Settings.AnnouncedAddress) ? Settings.AnnouncedAddress : IpInfo.Address;
+                var existing = JsonConvert.DeserializeObject<List<ServerInfo>>(HttpHelper.DownloadString(Util.GetFinalRedirect(Settings.MasterServer))).Where(x => x.address == effectiveAddress && x.port == Settings.Port.ToString()).FirstOrDefault();
                 if(existing != null)
                 {
                     Logger.Warning("Server info already present in master server, waiting for 10 seconds...");
@@ -98,6 +99,7 @@ namespace RageCoop.Server
                 var serverInfo = new ServerInfo
                 {
                     address = IpInfo.Address,
+                    announcedAddress = !string.IsNullOrWhiteSpace(Settings.AnnouncedAddress) ? Settings.AnnouncedAddress : null,
                     port = Settings.Port.ToString(),
                     country = IpInfo.Country,
                     name = Settings.Name,
