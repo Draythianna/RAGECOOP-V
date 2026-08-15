@@ -56,6 +56,7 @@ namespace RageCoop.Client.Menus
         {
             List<ServerInfo> serverList = null;
             var realUrl = Main.Settings.MasterServer;
+            GTA.UI.Notification.Show("Fetching: " + realUrl);
             serverList = JsonConvert.DeserializeObject<List<ServerInfo>>(DownloadString(realUrl));
 
             // Need to be processed in main thread
@@ -122,6 +123,7 @@ namespace RageCoop.Client.Menus
                 ServicePointManager.ServerCertificateValidationCallback = delegate { return true; };
 
                 WebClient client = new WebClient();
+                client.Headers.Add("User-Agent", "Mozilla/5.0 RageCoop/1.5.12.15");
                 return client.DownloadString(url);
             }
             catch (Exception ex)
