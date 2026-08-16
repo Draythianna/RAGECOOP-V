@@ -16,7 +16,7 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <OutDir>..\bin\$(Configuration)\Client\Scripts\</OutDir>
+    <OutDir>..\bin\$(Configuration)\Client\Scripts\RageCoop\</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
     <OutPutPath>..\bin\Debug\Client</OutPutPath>
