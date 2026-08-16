@@ -15,7 +15,7 @@ RAGECOOP brings multiplayer experience to the story mode, you can complete missi
 
 # 👁 Requirements
 - ScriptHookV
-- ScriptHookVDotNetCore WIP
+- ScriptHookVDotNet 3.7
 - .NET Framework 4.8 Runtime or SDK
 
 # 📋 Building the project
