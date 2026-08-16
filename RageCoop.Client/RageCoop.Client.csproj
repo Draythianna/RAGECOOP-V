@@ -16,19 +16,20 @@
     <TargetFrameworkProfile />
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <OutDir>..\bin\Release\Client\Scripts\</OutDir>
 </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Debug'">
-    <OutPutPath>..\bin\Debug\Client</OutPutPath>
+    <OutPutPath>..\bin\Debug\Client\Scripts\RageCoop\</OutPutPath>
+    <OutputPath>..\bin\Debug\Client\Scripts\RageCoop\</OutputPath>
+    <OutDir>..\bin\Debug\Client\Scripts\RageCoop\</OutDir>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <DefineConstants>DEBUG</DefineConstants>
     <WarningLevel>4</WarningLevel>
-    <OutDir>..\bin\Release\Client\Scripts\</OutDir>
+    <OutDir>..\bin\Release\Client\Scripts\RageCoop\</OutDir>
 </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
     <OutPutPath>..\bin\Release\Client</OutPutPath>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutDir>..\bin\Release\Client\Scripts\</OutDir>
+    <OutDir>..\bin\Release\Client\Scripts\RageCoop\</OutDir>
 </PropertyGroup>
   <ItemGroup>
     <Compile Include="Debug.cs" />
@@ -302,7 +303,7 @@
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
     <PropertyGroup>
       <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-      <OutDir>..\bin\Release\Client\Scripts\</OutDir>
+      <OutDir>..\bin\Release\Client\Scripts\RageCoop\</OutDir>
 </PropertyGroup>
     <Error Condition="!Exists('..\packages\Fody.6.6.3\build\Fody.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Fody.6.6.3\build\Fody.targets'))" />
     <Error Condition="!Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\Costura.Fody.5.7.0\build\Costura.Fody.props'))" />
@@ -311,6 +312,22 @@
   <Import Project="..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets" Condition="Exists('..\packages\Costura.Fody.5.7.0\build\Costura.Fody.targets')" />
   <PropertyGroup Condition=" '$(DevEnvDir)' != '*Undefined*'">
     <PostBuildEvent>"$(DevEnvDir)TextTransform.exe" -a !!BuildConfiguration!$(Configuration) "$(ProjectDir)Properties\AssemblyInfo.tt"</PostBuildEvent>
-    <OutDir>..\bin\Release\Client\Scripts\</OutDir>
+    <OutDir>..\bin\Release\Client\Scripts\RageCoop\</OutDir>
 </PropertyGroup>
+  <Target Name="CopyLidgren" AfterTargets="Build">
+    <Copy SourceFiles="..\libs\Lidgren.Network.dll"
+          DestinationFolder="$(OutDir)"
+          SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyDebugOutput" AfterTargets="Build"
+          Condition="'$(Configuration)' == 'Debug'">
+    <MakeDir Directories="..\bin\Debug\Client\Scripts\RageCoop" />
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="..\bin\Debug\Client\Scripts\RageCoop"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(TargetDir)$(TargetName).pdb"
+          DestinationFolder="..\bin\Debug\Client\Scripts\RageCoop"
+          SkipUnchangedFiles="true"
+          Condition="Exists('$(TargetDir)$(TargetName).pdb')" />
+  </Target>
 </Project>
