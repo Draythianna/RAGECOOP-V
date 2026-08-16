@@ -1,0 +1,25 @@
+<Project>
+  <Target Name="CopyClientToScriptsRageCoop" AfterTargets="Build"
+          Condition="'$(MSBuildProjectName)' == 'RageCoop.Client'">
+    <ItemGroup>
+      <ClientRootFiles Include="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\*.*"
+                       Exclude="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\*.pdb;$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\*.dll" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ClientRootFiles)"
+          DestinationFolder="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\Scripts\RageCoop\"
+          SkipUnchangedFiles="true" />
+    <Delete Files="@(ClientRootFiles)" />
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\Scripts\RageCoop\"
+          SkipUnchangedFiles="true" />
+  </Target>
+  <Target Name="CopyCoreToScriptsRageCoop" AfterTargets="Build"
+          Condition="'$(MSBuildProjectName)' == 'RageCoop.Core'">
+    <Copy SourceFiles="$(TargetPath)"
+          DestinationFolder="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\Scripts\RageCoop\"
+          SkipUnchangedFiles="true" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)libs\Lidgren.Network.dll"
+          DestinationFolder="$(MSBuildThisFileDirectory)bin\$(Configuration)\Client\Scripts\RageCoop\"
+          SkipUnchangedFiles="true" />
+  </Target>
+</Project>

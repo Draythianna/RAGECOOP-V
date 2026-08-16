@@ -7,6 +7,7 @@
     {
 #pragma warning disable 1591
         public string address { get; set; }
+        public string announcedAddress { get; set; }
         public string port { get; set; }
         public string name { get; set; }
         public string version { get; set; }
