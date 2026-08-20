@@ -58,7 +58,7 @@ public class Settings
     /// <summary>
     ///     Master server address, mostly doesn't need to be changed.
     /// </summary>
-    public string MasterServer { get; set; } = "https://test.ragecoop.com/";
+    public string MasterServer { get; set; } = "https://ragecoop.server-dedicated.com/";
 
     /// <summary>
     ///     See <see cref="Core.Logger.LogLevel" />.
