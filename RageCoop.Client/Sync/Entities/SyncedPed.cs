@@ -30,7 +30,7 @@ namespace RageCoop.Client
             MainPed=p;
             OwnerID=Main.LocalPlayerID;
 
-            Function.Call(Hash._SET_PED_CAN_PLAY_INJURED_ANIMS, false);
+            Function.Call((Hash)0xB128377056A54935, false);
             MainPed.SetConfigFlag((int)PedConfigFlags.CPED_CONFIG_FLAG_DisableHurt, true);
                         MainPed.SetConfigFlag((int)PedConfigFlags.CPED_CONFIG_FLAG_DisableMelee, true);
 
@@ -251,7 +251,7 @@ namespace RageCoop.Client
             Function.Call(Hash.SET_PED_CAN_BE_TARGETTED_BY_PLAYER, MainPed.Handle, Game.Player, true);
             Function.Call(Hash.SET_PED_GET_OUT_UPSIDE_DOWN_VEHICLE, MainPed.Handle, false);
             Function.Call(Hash.SET_CAN_ATTACK_FRIENDLY, MainPed.Handle, true, true);
-            Function.Call(Hash._SET_PED_CAN_PLAY_INJURED_ANIMS, false);
+            Function.Call((Hash)0xB128377056A54935, false);
 
             MainPed.BlockPermanentEvents = true;
             MainPed.CanWrithe=false;

@@ -915,7 +915,7 @@ namespace LemonUI.Menus
 #elif RPH
             NativeFunction.CallByHash<int>(0xFC695459D4D0E219, pos.X, pos.Y);
 #elif SHVDN3
-            Function.Call(Hash._SET_CURSOR_LOCATION, pos.X, pos.Y);
+            Function.Call(Hash.SET_CURSOR_POSITION, pos.X, pos.Y);
 #endif
         }
         /// <summary>

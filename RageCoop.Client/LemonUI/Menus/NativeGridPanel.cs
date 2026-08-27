@@ -293,7 +293,7 @@ namespace LemonUI.Menus
 #elif RPH
             bool usingKeyboard = NativeFunction.CallByHash<bool>(0xA571D46727E2B718, 2);
 #elif SHVDN3
-            bool usingKeyboard = Function.Call<bool>(Hash._IS_USING_KEYBOARD, 2);
+            bool usingKeyboard = Function.Call<bool>(Hash.IS_USING_KEYBOARD_AND_MOUSE, 2);
 #endif
             if (usingKeyboard)
             {

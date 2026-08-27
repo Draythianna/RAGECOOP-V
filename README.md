@@ -23,7 +23,7 @@ _Old name: GTACOOP:R_
 - .NET Framework 4.8
 
 # 📚 Libraries
-- [ScriptHookVDotNet3](https://github.com/crosire/scripthookvdotnet/releases/tag/v3.4.0)
+- [ScriptHookVDotNetEnhanced](https://github.com/Chiheb-Bacha/ScriptHookVDotNetEnhanced)
 - [LemonUI.SHVDN3](https://github.com/justalemon/LemonUI/releases/tag/v1.6)
 - Lidgren Network Custom (***PRIVATE***)
 - - No new features (only improvements)

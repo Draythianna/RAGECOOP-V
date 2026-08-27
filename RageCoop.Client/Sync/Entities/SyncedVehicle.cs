@@ -268,13 +268,13 @@ namespace RageCoop.Client
                         if (!_lastTransformed)
                         {
                             _lastTransformed = true;
-                            Function.Call(Hash._TRANSFORM_VEHICLE_TO_SUBMARINE, MainVehicle.Handle, false);
+                            Function.Call((Hash)0xAA58C7D5F88E29DF, MainVehicle.Handle, false);
                         }
                     }
                     else if (_lastTransformed)
                     {
                         _lastTransformed = false;
-                        Function.Call(Hash._TRANSFORM_SUBMARINE_TO_VEHICLE, MainVehicle.Handle, false);
+                        Function.Call(Hash.TRANSFORM_TO_SUBMARINE, MainVehicle.Handle, false);
                     }
                 }
 

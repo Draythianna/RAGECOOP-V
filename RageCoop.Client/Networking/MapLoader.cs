@@ -140,7 +140,7 @@ namespace RageCoop.Client
         
                     if (prop.Texture > 0 && prop.Texture < 16)
                     {
-                        Function.Call(Hash._SET_OBJECT_TEXTURE_VARIATION, handle, prop.Texture);
+                        Function.Call(Hash.SET_OBJECT_TINT_INDEX, handle, prop.Texture);
                     }
                 }
             }
