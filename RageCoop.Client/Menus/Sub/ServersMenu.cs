@@ -19,7 +19,7 @@ namespace RageCoop.Client.Menus
         private static Thread GetServersThread;
         internal static NativeMenu Menu = new NativeMenu("RAGECOOP", "Servers", "Go to the server list")
         {
-            UseMouse = false,
+            MouseBehavior = LemonUI.Menus.MenuMouseBehavior.Disabled,
             Alignment = Main.Settings.FlipMenu ? GTA.UI.Alignment.Right : GTA.UI.Alignment.Left
         };
         internal static NativeItem ResultItem = null;

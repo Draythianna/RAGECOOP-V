@@ -58,7 +58,13 @@
         /// <summary>
         /// Master server address, mostly doesn't need to be changed.
         /// </summary>
-        public string MasterServer { get; set; } = "https://masterserver.ragecoop.com/";
+        public string MasterServer { get; set; } = "https://ragecoop.server-dedicated.com";
+
+        /// <summary>
+        /// Override the address announced to the master server, useful when hosting behind a reverse proxy or Cloudflare Tunnel.
+        /// If empty, the server's public IP will be used.
+        /// </summary>
+        public string AnnouncedAddress { get; set; } = "";
 
         /// <summary>
         /// See <see cref="Core.Logger.LogLevel"/>.

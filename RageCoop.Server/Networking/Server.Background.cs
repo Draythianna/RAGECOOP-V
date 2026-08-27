@@ -97,7 +97,7 @@ namespace RageCoop.Server
                 Security.GetPublicKey(out var pModulus, out var pExpoenet);
                 var serverInfo = new ServerInfo
                 {
-                    address = IpInfo.Address,
+                    address = !string.IsNullOrWhiteSpace(Settings.AnnouncedAddress) ? Settings.AnnouncedAddress : IpInfo.Address,
                     port = Settings.Port.ToString(),
                     country = IpInfo.Country,
                     name = Settings.Name,

@@ -58,8 +58,8 @@ namespace RageCoop.Client
                     PingInterval = 5
                 };
 #if DEBUG
-                config.SimulatedMinimumLatency = SimulatedLatency;
-                config.SimulatedRandomLatency = 0;
+                // config.SimulatedMinimumLatency = SimulatedLatency; // removed in Lidgren update
+                // config.SimulatedRandomLatency = 0; // removed in Lidgren update
 #endif
                 config.EnableMessageType(NetIncomingMessageType.UnconnectedData);
                 config.EnableMessageType(NetIncomingMessageType.NatIntroductionSuccess);
