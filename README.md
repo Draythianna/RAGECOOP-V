@@ -15,7 +15,7 @@ RAGECOOP brings multiplayer experience to the story mode, you can complete missi
 
 # 👁 Requirements
 - ScriptHookV
-- ScriptHookVDotNet 3.6.0 or later
+- ScriptHookVDotNetEnhanced 3.9.0 or later
 - .NET Framework 4.8 Runtime or SDK
 
 # 📋 Building the project
@@ -31,7 +31,7 @@ Recommended IDE:
 Then run `dotnet build` in the solution directory, built binaries are in the `bin` folder
 
 # 📚 Third-party libraries
-- [ScriptHookVDotNet3](https://github.com/crosire/scripthookvdotnet)
+- [ScriptHookVDotNet3](https://github.com/Chiheb-Bacha/scripthookvdotnetenhanced)
 - [LemonUI.SHVDN3](https://github.com/justalemon/LemonUI)
 - Lidgren Network Custom
 - - No new features (only improvements)

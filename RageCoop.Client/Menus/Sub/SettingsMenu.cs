@@ -10,7 +10,7 @@ namespace RageCoop.Client.Menus
     {
         public static NativeMenu Menu = new NativeMenu("RAGECOOP", "Settings", "Go to the settings")
         {
-            UseMouse = false,
+            MouseBehavior = LemonUI.Menus.MenuMouseBehavior.Disabled,
             Alignment = Main.Settings.FlipMenu ? GTA.UI.Alignment.Right : GTA.UI.Alignment.Left
         };
 
