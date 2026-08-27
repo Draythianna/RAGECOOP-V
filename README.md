@@ -56,7 +56,7 @@ Then run `dotnet build` in the solution directory, built binaries are in the `bi
 
 See [Bugs](https://github.com/RAGECOOP/RAGECOOP-V/issues/33)
 
-# ⚠️ Important: SHVDN Timeout Configuration
+# 🐛 Important: SHVDN Timeout Configuration
 
 If RageCoop terminates on startup with the following error in the SHVDN console:
 
