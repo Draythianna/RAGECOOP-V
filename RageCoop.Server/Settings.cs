@@ -58,7 +58,7 @@
         /// <summary>
         /// Master server address, mostly doesn't need to be changed.
         /// </summary>
-        public string MasterServer { get; set; } = "https://ragecoop.server-dedicated.com";
+        public string MasterServer { get; set; } = "https://masterserver.ragecoop.com/";
 
         /// <summary>
         /// Optional address to announce to the master server instead of your real public IP.
