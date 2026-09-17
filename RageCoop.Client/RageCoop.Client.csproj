@@ -28,6 +28,17 @@
     <Optimize>True</Optimize>
   </PropertyGroup>
 
+  <Target Name="StageClientOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <ClientStagingDir>$(MSBuildProjectDirectory)\..\bin\$(Configuration)\Client\scripts\RageCoop\</ClientStagingDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ClientStagingDir)" />
+    <ItemGroup>
+      <ClientOutputFiles Include="$(TargetDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ClientOutputFiles)" DestinationFiles="@(ClientOutputFiles->'$(ClientStagingDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
+
   <ItemGroup>
     <Content Include="icon.ico" />
   </ItemGroup>
@@ -42,12 +53,15 @@
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ScriptHookVDotNet">
       <HintPath>..\..\RageCoop.SHVDN\bin\Release\ScriptHookVDotNet.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="ScriptHookVDotNet3">
       <HintPath>..\libs\ScriptHookVDotNet3.dll</HintPath>
+      <Private>False</Private>
     </Reference>
   </ItemGroup>
 
