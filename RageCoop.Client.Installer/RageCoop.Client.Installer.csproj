@@ -33,4 +33,15 @@
     </EmbeddedResource>
   </ItemGroup>
 
+  <!-- Stage installer output into bin\Release\Installer for packaging -->
+  <Target Name="StageInstallerOutput" AfterTargets="Build" Condition="'$(Configuration)' == 'Release'">
+    <PropertyGroup>
+      <InstallerStagingDir>$(MSBuildThisFileDirectory)..\bin\Release\Installer\</InstallerStagingDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(InstallerStagingDir)" />
+    <ItemGroup>
+      <InstallerOutputFiles Include="$(OutputPath)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(InstallerOutputFiles)" DestinationFiles="@(InstallerOutputFiles->'$(InstallerStagingDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 </Project>
