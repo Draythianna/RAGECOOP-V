@@ -9,7 +9,7 @@
         public string WelcomeMessage { get; set; } = "Welcome on this server :)";
         public bool HolePunch { get; set; } = true;
         public bool AnnounceSelf { get; set; } = false;
-        public string MasterServer { get; set; } = "https://masterserver.ragecoop.com/";
+        public string MasterServer { get; set; } = "[AUTO]";
 
         /// <summary>
         /// See <see cref="Core.Logger.LogLevel"/>.

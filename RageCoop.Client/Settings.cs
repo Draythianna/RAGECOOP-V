@@ -20,7 +20,7 @@ namespace RageCoop.Client
         /// <summary>
         /// Don't use it!
         /// </summary>
-        public string MasterServer { get; set; } = "https://masterserver.ragecoop.com/";
+        public string MasterServer { get; set; } = "[AUTO]";
         /// <summary>
         /// Don't use it!
         /// </summary>

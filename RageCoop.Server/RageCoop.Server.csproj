@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
@@ -54,5 +54,15 @@
     </Reference>
   </ItemGroup>
 
+  <Target Name="StageServerOutput" AfterTargets="Build">
+    <PropertyGroup>
+      <ServerStagingDir>$(MSBuildProjectDirectory)\..\bin\$(Configuration)\Server\</ServerStagingDir>
+    </PropertyGroup>
+    <MakeDir Directories="$(ServerStagingDir)" />
+    <ItemGroup>
+      <ServerOutputFiles Include="$(TargetDir)**\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ServerOutputFiles)" DestinationFiles="@(ServerOutputFiles->'$(ServerStagingDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
+  </Target>
 
 </Project>
