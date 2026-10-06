@@ -13,6 +13,7 @@ COPY libs/*.dll ./libs/
 
 # Assuming RageCoop.Core is a dependency, if not, you can comment out the next line
 COPY RageCoop.Core/*.csproj ./RageCoop.Core/
+COPY RageCoop.ShvdnStub/*.csproj ./RageCoop.ShvdnStub/
 
 RUN dotnet restore RageCoop.Server/RageCoop.Server.csproj
 
