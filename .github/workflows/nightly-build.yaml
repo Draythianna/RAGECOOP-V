@@ -3,6 +3,10 @@ name: Nightly-build
 on:
   push:
     branches: [ "dev-nightly" ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -13,9 +17,9 @@ jobs:
         dotnet-version: ['6.0.x']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version:  ${{ matrix.dotnet-version }}
     - name: Restore dependencies
@@ -26,6 +30,11 @@ jobs:
       run: dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop
     - name: Build server win-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r win-x64 -o bin/Release/Server/win-x64 -c Release
+    - name: Check GTA math types load on the server
+      run: dotnet run --project tests/ShvdnStubCheck -c Release
+    - name: Smoke test published server with a resource
+      shell: pwsh
+      run: ./tests/smoke-server.ps1 -ServerDir bin/Release/Server/win-x64 -ReferenceDir bin/Release/Server
     - name: Build server linux-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r linux-x64 -o bin/Release/Server/linux-x64 -c Release
     - uses: vimtor/action-zip@v1
@@ -43,35 +52,14 @@ jobs:
         files: bin/Release/Server/linux-x64
         dest: RageCoop.Server-linux-x64.zip
 
-    - uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
+    - name: Publish nightly release
+      uses: softprops/action-gh-release@v2
       with:
-        upload_url: https://uploads.github.com/repos/RAGECOOP/RAGECOOP-V/releases/70603992/assets{?name,label} 
-        release_id: 70603992 
-        asset_path: RageCoop.Client.zip
-        asset_name: RageCoop.Client.zip
-        asset_content_type: application/zip
-        max_releases: 7
-
-    - uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
-      with:
-        upload_url: https://uploads.github.com/repos/RAGECOOP/RAGECOOP-V/releases/70603992/assets{?name,label} 
-        release_id: 70603992 
-        asset_path: RageCoop.Server-win-x64.zip
-        asset_name: RageCoop.Server-win-x64.zip
-        asset_content_type: application/zip
-        max_releases: 7
-
-    - uses: WebFreak001/deploy-nightly@v1.1.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
-      with:
-        upload_url: https://uploads.github.com/repos/RAGECOOP/RAGECOOP-V/releases/70603992/assets{?name,label} 
-        release_id: 70603992 
-        asset_path: RageCoop.Server-linux-x64.zip
-        asset_name: RageCoop.Server-linux-x64.zip
-        asset_content_type: application/zip
-        max_releases: 7
+        tag_name: nightly
+        name: Nightly build
+        prerelease: true
+        target_commitish: ${{ github.sha }}
+        files: |
+          RageCoop.Client.zip
+          RageCoop.Server-win-x64.zip
+          RageCoop.Server-linux-x64.zip
