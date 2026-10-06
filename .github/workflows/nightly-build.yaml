@@ -30,6 +30,11 @@ jobs:
       run: dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop
     - name: Build server win-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r win-x64 -o bin/Release/Server/win-x64 -c Release
+    - name: Check GTA math types load on the server
+      run: dotnet run --project tests/ShvdnStubCheck -c Release
+    - name: Smoke test published server with a resource
+      shell: pwsh
+      run: ./tests/smoke-server.ps1 -ServerDir bin/Release/Server/win-x64 -ReferenceDir bin/Release/Server
     - name: Build server linux-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r linux-x64 -o bin/Release/Server/linux-x64 -c Release
     - uses: vimtor/action-zip@v1

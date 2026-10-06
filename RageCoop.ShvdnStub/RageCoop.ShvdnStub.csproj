@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    Server-side stand-in for ScriptHookVDotNet.dll.
+
+    libs/ScriptHookVDotNet.dll is a mixed-mode (C++/CLI) assembly that only loads
+    inside GTA V. libs/ScriptHookVDotNet3.dll is pure IL and the server uses its
+    GTA.Math types, but since SHVDN 3.7 some of those types mention SHVDN.* types
+    from the native assembly in their signatures (for example the
+    Vector3(SHVDN.FVector3) constructor). Anything that reflects over them, such as
+    XmlSerializer or Newtonsoft.Json, then makes the .NET runtime load
+    "ScriptHookVDotNet", which fails with BadImageFormatException.
+
+    This project builds a pure-IL assembly with the same identity that declares
+    just those types, so the server can resolve the signatures. Nothing in here
+    does anything; the client keeps using the real DLL.
+
+    When libs/ScriptHookVDotNet3.dll is updated, update AssemblyVersion below to
+    the version it references, and add any new SHVDN.* types it mentions to
+    Stub.cs. tests/ShvdnStubCheck fails the build if either is missed.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>ScriptHookVDotNet</AssemblyName>
+    <RootNamespace>SHVDN</RootNamespace>
+    <AssemblyVersion>3.9.0.6</AssemblyVersion>
+    <FileVersion>3.9.0.6</FileVersion>
+    <Product>RageCoop server stand-in for ScriptHookVDotNet</Product>
+    <Description>Declares the SHVDN.* types ScriptHookVDotNet3 mentions, so its math types load on a server. Not the real ScriptHookVDotNet.</Description>
+    <!-- Same public key as the real assembly so the strong-named reference binds.
+         Public signing only: the file holds the public key, no private key. -->
+    <SignAssembly>true</SignAssembly>
+    <PublicSign>true</PublicSign>
+    <AssemblyOriginatorKeyFile>ScriptHookVDotNet.PublicKey.snk</AssemblyOriginatorKeyFile>
+    <IsPackable>false</IsPackable>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS0649;CS0169</NoWarn>
+  </PropertyGroup>
+
+</Project>
