@@ -12,6 +12,8 @@ on:
   pull_request:
     branches: [ "main", "dev-nightly" ]
 
+  workflow_dispatch:
+
 jobs:
   build:
 
@@ -21,9 +23,9 @@ jobs:
         dotnet-version: ['6.0.x']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version:  ${{ matrix.dotnet-version }}
     - name: Restore dependencies
@@ -35,14 +37,12 @@ jobs:
     - name: Build server win-x64
       run: dotnet build RageCoop.Server/RageCoop.Server.csproj -o bin/Release/Server
     - name: Upload server
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Server
         path: bin/Release/Server
     - name: Upload Client
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Client
         path: bin/Release/Client
-    - uses: actions/checkout@v2
-      
