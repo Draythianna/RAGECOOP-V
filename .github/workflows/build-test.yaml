@@ -35,7 +35,12 @@ jobs:
     - name: Build client and installer
       run: dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop
     - name: Build server win-x64
-      run: dotnet build RageCoop.Server/RageCoop.Server.csproj -o bin/Release/Server
+      run: dotnet build RageCoop.Server/RageCoop.Server.csproj --configuration Release -o bin/Release/Server
+    - name: Check GTA math types load on the server
+      run: dotnet run --project tests/ShvdnStubCheck -c Release -- bin/Release/Server
+    - name: Smoke test server with a resource
+      shell: pwsh
+      run: ./tests/smoke-server.ps1 -ServerDir bin/Release/Server
     - name: Upload server
       uses: actions/upload-artifact@v4
       with:
