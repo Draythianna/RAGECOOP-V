@@ -1,89 +1,103 @@
-name: Nightly-build
+name: Release build
+
+# Builds 1.6-pre-alpha and refreshes its three zips on the "1.6-alpha" release:
+#
+#   RAGECOOP-V-1.6-alpha-Client-<UTC timestamp>.zip      contents of bin/Release/Client
+#   RAGECOOP-V-1.6-alpha-Installer-<UTC timestamp>.zip   contents of bin/Release/Installer
+#   RAGECOOP-V-1.6-alpha-Server-<UTC timestamp>.zip      contents of bin/Release/Server
+#
+# Only those three zips are replaced. The release's title, notes and every other
+# file on it (such as the ScriptHookVDotNetCore zip) are left alone, and the
+# release is never created or edited from here.
+#
+# Started by hand from any other branch it builds without publishing; the zips
+# are attached to the run instead.
 
 on:
   push:
-    branches: [ "dev-nightly" ]
+    branches:
+      - 1.6-pre-alpha
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-build-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  RELEASE_TAG: 1.6-alpha
+  RELEASE_BRANCH: 1.6-pre-alpha
 
 jobs:
   build:
-
     runs-on: windows-latest
-    strategy:
-      matrix:
-        dotnet-version: ['7.0.x']
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+    - uses: actions/checkout@v4
       with:
-        dotnet-version:  ${{ matrix.dotnet-version }}
-        
-    - name: Initialise submodules
-      run: git submodule update --init
+        submodules: recursive
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '7.0.x'
 
     - name: Restore dependencies
       run: dotnet restore
 
-    - name: Restore nuget packages
-      run: nuget restore
+    - name: Build
+      shell: cmd
+      run: call build.cmd
 
-    - name: Build artifacts
-      run: .\build.cmd
+    - name: Package
+      id: package
+      shell: pwsh
+      run: |
+        $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
+        New-Item dist -ItemType Directory -Force | Out-Null
+        $summary = @()
+        foreach ($part in 'Client', 'Installer', 'Server') {
+          $dir = "bin/Release/$part"
+          $files = Get-ChildItem $dir -Recurse -File -ErrorAction SilentlyContinue
+          if (-not $files) {
+            # build.cmd keeps going after a failed step, so a missing folder means the build broke.
+            Write-Output "::error title=Package::$dir is missing or empty; the build did not produce it"
+            exit 1
+          }
+          $zip = "dist/RAGECOOP-V-$env:RELEASE_TAG-$part-$stamp.zip"
+          Compress-Archive -Path "$dir/*" -DestinationPath $zip
+          $summary += "$part=$($files.Count) files/$([math]::Round((Get-Item $zip).Length / 1MB, 2)) MB"
+        }
+        Write-Output "::notice title=Package::RAGECOOP-V-$env:RELEASE_TAG-<part>-$stamp.zip ($($summary -join ', '))"
+        $publish = '${{ github.ref_name }}' -eq $env:RELEASE_BRANCH
+        "publish=$($publish.ToString().ToLower())" >> $env:GITHUB_OUTPUT
 
-    - name: Build server for different platforms
-      run: .\publish-server.cmd
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Client
-        dest: RageCoop.Client.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/API
-        dest: bin/Artifacts/SDK.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/win-x64
-        dest: bin/Artifacts/RageCoop.Server-win-x64.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/win-x86
-        dest: bin/Artifacts/RageCoop.Server-win-x86.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/linux-x64
-        dest: bin/Artifacts/RageCoop.Server-linux-x64.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/linux-arm
-        dest: bin/Artifacts/RageCoop.Server-linux-arm.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/linux-arm
-        dest: bin/Artifacts/RageCoop.Server-linux-arm.zip
-
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/linux-arm64
-        dest: bin/Artifacts/RageCoop.Server-linux-arm64.zip
-
-    - name: Deploy binaries 
-      uses: Sardelka9515/deploy-nightly@v0.7
+    - name: Publish to the 1.6-alpha release
+      if: steps.package.outputs.publish == 'true'
+      shell: pwsh
       env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # automatically provided by github actions
-      with:
-        upload_url: https://uploads.github.com/repos/RAGECOOP/GTAV-RESOURCES/releases/75463254/assets{?name,label}
-        release_id: 75463254 
-        asset_path: bin/Artifacts
-        asset_content_type: application/zip
-        max_releases: 7
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        $tag = $env:RELEASE_TAG
+        $before = @(gh release view $tag --json assets --jq '.assets[].name')
+        if ($LASTEXITCODE -ne 0) {
+          Write-Output "::error title=Publish::Release '$tag' does not exist. Create it on GitHub first; this workflow never creates or edits it."
+          exit 1
+        }
+        $new = Get-ChildItem dist -Filter *.zip
+        # Upload first, then remove the older zips of the same three kinds.
+        gh release upload $tag @($new.FullName)
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        $old = $before | Where-Object { $_ -notin $new.Name -and $_ -match "^RAGECOOP-V-$([regex]::Escape($tag))-(Client|Installer|Server)-.*\.zip$" }
+        foreach ($name in $old) { gh release delete-asset $tag $name --yes }
+        Write-Output "::notice title=Publish::Uploaded $($new.Count) zips to release '$tag'; removed $(@($old).Count) older zip(s); title, notes and other files untouched"
 
-    - uses: actions/checkout@v2
-      
+    - name: Attach zips to this run
+      if: steps.package.outputs.publish != 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: release-zips
+        path: dist/*.zip
