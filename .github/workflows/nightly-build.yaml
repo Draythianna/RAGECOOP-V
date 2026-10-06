@@ -84,6 +84,11 @@ jobs:
         foreach ($part in 'Client', 'Installer', 'Server') {
           if (Test-Path "bin/Release/$part") { Copy-Item "bin/Release/$part" (Join-Path $stage $part) -Recurse }
         }
+        # Branches whose installer project has no shared output folder build it under the project.
+        if (-not (Test-Path (Join-Path $stage 'Installer'))) {
+          $exe = Get-ChildItem RageCoop.Client.Installer/bin/Release -Recurse -Filter RageCoop.Client.Installer.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($exe) { Copy-Item $exe.Directory.FullName (Join-Path $stage 'Installer') -Recurse }
+        }
         foreach ($required in 'Client', 'Server') {
           if (-not (Get-ChildItem (Join-Path $stage $required) -Recurse -File -ErrorAction SilentlyContinue)) {
             Write-Output "::error title=Package::bin/Release/$required is missing or empty"
