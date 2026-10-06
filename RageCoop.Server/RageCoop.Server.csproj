@@ -59,6 +59,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\RageCoop.Core\RageCoop.Core.csproj" />
+    <!-- Pure-IL stand-in for the native ScriptHookVDotNet.dll; see RageCoop.ShvdnStub.csproj -->
+    <ProjectReference Include="..\RageCoop.ShvdnStub\RageCoop.ShvdnStub.csproj" PrivateAssets="all" />
   </ItemGroup>
 
   <ItemGroup>
