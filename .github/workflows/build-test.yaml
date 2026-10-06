@@ -33,12 +33,7 @@ jobs:
     - name: Restore nuget packages
       run: nuget restore
     - name: Build client and installer
-      shell: pwsh
-      run: |
-        dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop 2>&1 | Tee-Object build.log
-        $code = $LASTEXITCODE
-        Select-String -Path build.log -Pattern 'error' | Where-Object { $_.Line -notmatch 'warning' } | ForEach-Object { $_.Line.Trim() } | Select-Object -Unique -First 9 | ForEach-Object { Write-Output "::error::$_" }
-        exit $code
+      run: dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop
     - name: Build server win-x64
       run: dotnet build RageCoop.Server/RageCoop.Server.csproj -o bin/Release/Server
     - name: Upload server

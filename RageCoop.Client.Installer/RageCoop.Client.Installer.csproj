@@ -40,7 +40,7 @@
     </PropertyGroup>
     <MakeDir Directories="$(InstallerStagingDir)" />
     <ItemGroup>
-      <InstallerOutputFiles Include="$(OutputPath)**\*" />
+      <InstallerOutputFiles Include="$(OutDir)**\*" />
     </ItemGroup>
     <Copy SourceFiles="@(InstallerOutputFiles)" DestinationFiles="@(InstallerOutputFiles->'$(InstallerStagingDir)%(RecursiveDir)%(Filename)%(Extension)')" SkipUnchangedFiles="true" />
   </Target>
