@@ -6,6 +6,7 @@ on:
       - '**'        # matches every branch
       - '!main'     # excludes main
       - '!dev-nightly'     # excludes nightly
+      - '!1.6-pre-alpha'   # built and published by Release build instead
 
   pull_request:
     branches: [ "main", "dev-nightly" ]
@@ -19,9 +20,9 @@ jobs:
         dotnet-version: ['7.0.x']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version:  ${{ matrix.dotnet-version }}
     
@@ -38,16 +39,13 @@ jobs:
       run: .\build.cmd
 
     - name: Upload server
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Server
         path: bin/Release/Server
 
     - name: Upload Client
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Client
         path: bin/Release/Client
-
-    - uses: actions/checkout@v2
-      
