@@ -1,0 +1,36 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!--
+    A minimal server resource used by tests/smoke-server.ps1. On start it reads a
+    Race-style map containing GTA.Math.Vector3 with XmlSerializer, which is what
+    RageCoop.Resources.Race does, and logs SMOKE-OK.
+
+    ServerDir must point at a built server output folder.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <AssemblyName>StubSmoke</AssemblyName>
+    <RootNamespace>StubSmoke</RootNamespace>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <IsPackable>false</IsPackable>
+    <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
+    <GenerateDependencyFile>false</GenerateDependencyFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="RageCoop.Server">
+      <HintPath>$(ServerDir)\RageCoop.Server.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="RageCoop.Core">
+      <HintPath>$(ServerDir)\RageCoop.Core.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="ScriptHookVDotNet3">
+      <HintPath>$(ServerDir)\ScriptHookVDotNet3.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+</Project>
