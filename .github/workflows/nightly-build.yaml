@@ -5,6 +5,7 @@ on:
     branches: [ "main" ]
   pull_request:
     branches: [ "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -15,9 +16,9 @@ jobs:
         dotnet-version: ['6.0.x']
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
+      uses: actions/setup-dotnet@v4
       with:
         dotnet-version:  ${{ matrix.dotnet-version }}
     - name: Restore dependencies
@@ -26,25 +27,28 @@ jobs:
       run: dotnet build RageCoop.Client/RageCoop.Client.csproj --no-restore --configuration Release -o RageCoop.Client/bin/RageCoop
     - name: Build server win-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r win-x64 -o RageCoop.Server/bin/win-x64 -c Release
+    - name: Check GTA math types load on the server
+      run: dotnet run --project tests/ShvdnStubCheck -c Release
+    - name: Smoke test published server with a resource
+      shell: pwsh
+      run: ./tests/smoke-server.ps1 -ServerDir RageCoop.Server/bin/win-x64 -ReferenceDir RageCoop.Server/bin/Release/net6.0/win-x64
     - name: Build server linux-x64
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r linux-x64 -o RageCoop.Server/bin/linux-x64 -c Release
     - name: Build server linux-arm
       run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r linux-arm -o RageCoop.Server/bin/linux-arm -c Release
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Client
         path: RageCoop.Client/bin
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Server-win-x64
         path: RageCoop.Server/bin/win-x64
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Server-linux-x64
         path: RageCoop.Server/bin/linux-x64
-    - uses: actions/upload-artifact@v3
+    - uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Server-linux-arm
         path: RageCoop.Server/bin/linux-arm
-    - uses: actions/checkout@v2
-      
