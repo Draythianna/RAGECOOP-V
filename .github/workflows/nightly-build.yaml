@@ -26,16 +26,16 @@ jobs:
     - name: Build client
       run: dotnet build RageCoop.Client/RageCoop.Client.csproj --no-restore --configuration Release -o RageCoop.Client/bin/RageCoop
     - name: Build server win-x64
-      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r win-x64 -o RageCoop.Server/bin/win-x64 -c Release
+      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r win-x64 -o RageCoop.Server/bin/win-x64 -c Release
     - name: Check GTA math types load on the server
       run: dotnet run --project tests/ShvdnStubCheck -c Release
     - name: Smoke test published server with a resource
       shell: pwsh
       run: ./tests/smoke-server.ps1 -ServerDir RageCoop.Server/bin/win-x64 -ReferenceDir RageCoop.Server/bin/Release/net6.0/win-x64
     - name: Build server linux-x64
-      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r linux-x64 -o RageCoop.Server/bin/linux-x64 -c Release
+      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r linux-x64 -o RageCoop.Server/bin/linux-x64 -c Release
     - name: Build server linux-arm
-      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=true -r linux-arm -o RageCoop.Server/bin/linux-arm -c Release
+      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r linux-arm -o RageCoop.Server/bin/linux-arm -c Release
     - uses: actions/upload-artifact@v4
       with:
         name: RageCoop.Client
