@@ -6,8 +6,13 @@ on:
       - '*'         # matches every branch that doesn't contain a '/'
       - '*/*'       # matches every branch containing a single '/'
       - '**'        # matches every branch
-      - '!main'     # excludes main
-      - '!dev-nightly'     # excludes nightly
+      # The six release branches are built and tested by Release build instead.
+      - '!main'
+      - '!dev-nightly'
+      - '!last-rel-nightly'
+      - '!enhanced_main'
+      - '!enhanced_dev-nightly'
+      - '!enhanced_last-rel-nightly'
 
   pull_request:
     branches: [ "main", "dev-nightly" ]

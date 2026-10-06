@@ -1,65 +1,148 @@
-name: Nightly-build
+name: Release build
+
+# Builds this branch and uploads one zip (Client / Installer / Server) to the
+# release of its family, replacing the branch's previous zip:
+#
+#   main, dev-nightly, last-rel-nightly                               -> "Legacy"
+#   enhanced_main, enhanced_dev-nightly, enhanced_last-rel-nightly    -> "Enhanced"
+#
+# The same file is used on all of those branches. Started by hand from any
+# other branch it builds and tests but does not publish; the zip is attached
+# to the run instead.
 
 on:
   push:
-    branches: [ "dev-nightly" ]
+    branches:
+      - main
+      - dev-nightly
+      - last-rel-nightly
+      - enhanced_main
+      - enhanced_dev-nightly
+      - enhanced_last-rel-nightly
   workflow_dispatch:
 
 permissions:
   contents: write
 
+concurrency:
+  group: release-build-${{ github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  FAMILY_BRANCHES: main dev-nightly last-rel-nightly enhanced_main enhanced_dev-nightly enhanced_last-rel-nightly
+
 jobs:
   build:
-
     runs-on: windows-latest
-    strategy:
-      matrix:
-        dotnet-version: ['6.0.x']
 
     steps:
     - uses: actions/checkout@v4
+
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
-        dotnet-version:  ${{ matrix.dotnet-version }}
+        dotnet-version: '6.0.x'
+
     - name: Restore dependencies
-      run: dotnet restore
-    - name: Restore nuget packages
-      run: nuget restore
-    - name: Build client and installer
-      run: dotnet build RageCoop.Client.Installer/RageCoop.Client.Installer.csproj --configuration Release -o bin/Release/Client/RageCoop
-    - name: Build server win-x64
-      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r win-x64 -o bin/Release/Server/win-x64 -c Release
-    - name: Check GTA math types load on the server
-      run: dotnet run --project tests/ShvdnStubCheck -c Release
-    - name: Smoke test published server with a resource
       shell: pwsh
-      run: ./tests/smoke-server.ps1 -ServerDir bin/Release/Server/win-x64 -ReferenceDir bin/Release/Server
-    - name: Build server linux-x64
-      run: dotnet publish RageCoop.Server/RageCoop.Server.csproj --self-contained -p:PublishSingleFile=true -p:PublishTrimmed=false -r linux-x64 -o bin/Release/Server/linux-x64 -c Release
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Client
-        dest: RageCoop.Client.zip
+      run: |
+        dotnet restore
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        # The old-style client project on the newer layout uses packages.config.
+        if (Test-Path RageCoop.Client/packages.config) { nuget restore; exit $LASTEXITCODE }
 
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/win-x64
-        dest: RageCoop.Server-win-x64.zip
+    - name: Build client
+      shell: pwsh
+      run: |
+        # Building the installer also builds the client; older branches have no installer.
+        $project = if (Test-Path RageCoop.Client.Installer) { 'RageCoop.Client.Installer/RageCoop.Client.Installer.csproj' } else { 'RageCoop.Client/RageCoop.Client.csproj' }
+        dotnet build $project --configuration Release
+        exit $LASTEXITCODE
 
-    - uses: vimtor/action-zip@v1
-      with:
-        files: bin/Release/Server/linux-x64
-        dest: RageCoop.Server-linux-x64.zip
+    - name: Build server
+      run: dotnet build RageCoop.Server/RageCoop.Server.csproj --configuration Release
 
-    - name: Publish nightly release
-      uses: softprops/action-gh-release@v2
+    - name: Check GTA math types load on the server
+      run: dotnet run --project tests/ShvdnStubCheck -c Release -- bin/Release/Server
+
+    - name: Smoke test server with a resource
+      shell: pwsh
+      run: ./tests/smoke-server.ps1 -ServerDir bin/Release/Server
+
+    - name: Package
+      id: package
+      shell: pwsh
+      run: |
+        $branch = '${{ github.ref_name }}'
+        $family = if ($branch.StartsWith('enhanced_')) { 'Enhanced' } else { 'Legacy' }
+        $short = ($branch -replace '^enhanced_', '') -replace '[\\/]', '-'
+        $stamp = (Get-Date).ToUniversalTime().ToString('yyyyMMdd-HHmmss')
+        $zip = "${family}_RageCOOP-V-$short-$stamp.zip"
+
+        $stage = Join-Path $env:RUNNER_TEMP 'package'
+        New-Item $stage -ItemType Directory -Force | Out-Null
+        foreach ($part in 'Client', 'Installer', 'Server') {
+          if (Test-Path "bin/Release/$part") { Copy-Item "bin/Release/$part" (Join-Path $stage $part) -Recurse }
+        }
+        # Branches whose installer project has no shared output folder build it under the project.
+        if (-not (Test-Path (Join-Path $stage 'Installer'))) {
+          $exe = Get-ChildItem RageCoop.Client.Installer/bin/Release -Recurse -Filter RageCoop.Client.Installer.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+          if ($exe) { Copy-Item $exe.Directory.FullName (Join-Path $stage 'Installer') -Recurse }
+        }
+        foreach ($required in 'Client', 'Server') {
+          if (-not (Get-ChildItem (Join-Path $stage $required) -Recurse -File -ErrorAction SilentlyContinue)) {
+            Write-Output "::error title=Package::bin/Release/$required is missing or empty"
+            exit 1
+          }
+        }
+        # Build by-products that do not belong in a download.
+        Get-ChildItem $stage -Recurse -File -Include *.nupkg | Remove-Item -Force
+        Get-ChildItem (Join-Path $stage 'Server') -File |
+          Where-Object { $_.Name -in 'ScriptHookVDotNet.pdb', 'ScriptHookVDotNet.deps.json' } | Remove-Item -Force
+
+        Compress-Archive -Path (Join-Path $stage '*') -DestinationPath $zip
+        $files = Get-ChildItem $stage -Recurse -File
+        $parts = (Get-ChildItem $stage -Directory | ForEach-Object { "$($_.Name)=$((Get-ChildItem $_.FullName -Recurse -File).Count)" }) -join ' '
+        $mb = [math]::Round((Get-Item $zip).Length / 1MB, 2)
+        Write-Output "::notice title=Package::$zip ($mb MB, $($files.Count) files: $parts)"
+
+        $publish = ($env:FAMILY_BRANCHES -split ' ') -contains $branch
+        "zip=$zip" >> $env:GITHUB_OUTPUT
+        "family=$family" >> $env:GITHUB_OUTPUT
+        "short=$short" >> $env:GITHUB_OUTPUT
+        "publish=$($publish.ToString().ToLower())" >> $env:GITHUB_OUTPUT
+
+    - name: Publish to the family release
+      if: steps.package.outputs.publish == 'true'
+      shell: pwsh
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+      run: |
+        $tag = '${{ steps.package.outputs.family }}'
+        $zip = '${{ steps.package.outputs.zip }}'
+        $short = '${{ steps.package.outputs.short }}'
+        $branch = '${{ github.ref_name }}'
+
+        gh release view $tag *> $null
+        if ($LASTEXITCODE -ne 0) {
+          gh release create $tag --title "$tag builds" --latest=false --target '${{ github.sha }}' `
+            --notes "Automated builds, one zip per branch. Each zip is replaced when its branch is pushed."
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        }
+
+        # Upload first, then remove this branch's older zips, so the release is never left without one.
+        $old = @(gh release view $tag --json assets --jq '.assets[].name') | Where-Object {
+          $_ -ne $zip -and ($_ -like "${tag}_RageCOOP-V-$short-*.zip" -or $_ -like "${tag}_RageCOOP-V-$branch-*.zip")
+        }
+        gh release upload $tag $zip
+        if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+        foreach ($name in $old) { gh release delete-asset $tag $name --yes }
+        Write-Output "::notice title=Publish::Uploaded $zip to release '$tag'; removed $($old.Count) older zip(s) for this branch"
+
+    - name: Attach zip to this run
+      if: steps.package.outputs.publish != 'true'
+      uses: actions/upload-artifact@v4
       with:
-        tag_name: nightly
-        name: Nightly build
-        prerelease: true
-        target_commitish: ${{ github.sha }}
-        files: |
-          RageCoop.Client.zip
-          RageCoop.Server-win-x64.zip
-          RageCoop.Server-linux-x64.zip
+        name: release-zip
+        path: ${{ steps.package.outputs.zip }}
