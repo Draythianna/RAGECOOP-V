@@ -288,8 +288,6 @@ namespace RageCoop.Client.Scripting
                 Args = args,
                 Hash = eventHash
             }, Networking.ServerConnection, ConnectionChannel.Event, Lidgren.Network.NetDeliveryMethod.ReliableOrdered);
-            // Send right away instead of waiting for the next network tick.
-            Networking.Peer?.FlushSendQueue();
         }
 
         /// <summary>
