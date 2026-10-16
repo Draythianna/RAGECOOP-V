@@ -78,6 +78,19 @@ namespace RageCoop.Client
         public static void UpdatePlayer(Packets.PlayerInfoUpdate packet)
         {
             var p = GetPlayer(packet.PedID);
+            if (p == null)
+            {
+                // The server knows this player but we never processed their connect message
+                // (e.g. it arrived before we were ready); add them instead of skipping them,
+                // otherwise they never appear in the player list.
+                if (string.IsNullOrEmpty(packet.Username)) { return; }
+                SetPlayer(packet.PedID, packet.Username, packet.Latency);
+                p = GetPlayer(packet.PedID);
+            }
+            else if (!string.IsNullOrEmpty(packet.Username) && p.Username != packet.Username)
+            {
+                p.Username = packet.Username;
+            }
             if (p != null)
             {
                 p._latencyToServer = packet.Latency;

@@ -72,10 +72,26 @@ namespace RageCoop.Client
         private const byte XOR_32_64 = 0x31;
         private const byte RET = 0xC3;
         #endregion
-        public static Vector3 ReadPosition(this Entity e) => ReadVector3(e.MemoryAddress + PositionOffset);
-        public static Quaternion ReadQuaternion(this Entity e) => Quaternion.RotationMatrix(e.Matrix);
+        // Reading through a deleted entity's memory address crashes the game, so these fall back to
+        // the regular natives when the entity is gone or has no address.
+        public static Vector3 ReadPosition(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            var address = e.MemoryAddress;
+            return address == IntPtr.Zero ? e.Position : ReadVector3(address + PositionOffset);
+        }
+        public static Quaternion ReadQuaternion(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Quaternion.Identity;
+            return Quaternion.RotationMatrix(e.Matrix);
+        }
         public static Vector3 ReadRotation(this Entity e) => e.ReadQuaternion().ToEulerDegrees();
-        public static Vector3 ReadVelocity(this Ped e) => ReadVector3(e.MemoryAddress + VelocityOffset);
+        public static Vector3 ReadVelocity(this Ped e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            var address = e.MemoryAddress;
+            return address == IntPtr.Zero ? e.Velocity : ReadVector3(address + VelocityOffset);
+        }
         public static Vector3 ReadVector3(IntPtr address)
         {
             float* ptr = (float*)address.ToPointer();

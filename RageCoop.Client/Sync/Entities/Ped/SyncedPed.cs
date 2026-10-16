@@ -77,6 +77,9 @@ namespace RageCoop.Client
                 }
 
                 if (!Main.Settings.ShowPlayerBlip && (byte)BlipColor != 255) BlipColor = (BlipColor)255;
+                // 255 means "no blip". Players should still get one while "Show player blip" is on,
+                // so fall back to the default player colour when none has arrived.
+                if (IsPlayer && Main.Settings.ShowPlayerBlip && (byte)BlipColor == 255) BlipColor = GTA.BlipColor.White;
                 if ((byte)BlipColor == 255 && PedBlip != null)
                 {
                     PedBlip.Delete();
