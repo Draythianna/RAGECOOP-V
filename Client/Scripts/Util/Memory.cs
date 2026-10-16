@@ -44,8 +44,10 @@ namespace RageCoop.Client
             // Weapon/radio wheel slow-mo patch
             // Thanks to @CamxxCore, https://github.com/CamxxCore/GTAVWeaponWheelMod
             var result = NativeMemory.FindPattern("\x38\x51\x64\x74\x19", "xxxxx");
+            // Skip the patch if the pattern isn't found (other game builds): a throwing static
+            // constructor breaks every Memory call, including the position reads.
             if (result == null)
-                throw new NotSupportedException("Can't find memory pattern to patch weapon/radio slowdown");
+                return;
             var address = result + 26;
             address = address + *(int*)address + 4u;
             VignettingPatch = new MemPatch(address, new byte[] { RET, 0x90, 0x90, 0x90, 0x90 });
@@ -55,21 +57,24 @@ namespace RageCoop.Client
 
         public static void ApplyPatches()
         {
-            VignettingPatch.Install();
-            VignettingCallPatch.Install();
-            TimeScalePatch.Install();
+            VignettingPatch?.Install();
+            VignettingCallPatch?.Install();
+            TimeScalePatch?.Install();
         }
 
         public static void RestorePatches()
         {
-            VignettingPatch.Uninstall();
-            VignettingCallPatch.Uninstall();
-            TimeScalePatch.Uninstall();
+            VignettingPatch?.Uninstall();
+            VignettingCallPatch?.Uninstall();
+            TimeScalePatch?.Uninstall();
         }
 
         public static Vector3 ReadPosition(this Entity e)
         {
-            return ReadVector3(e.MemoryAddress + PositionOffset);
+            // Read through the native rather than a fixed memory offset, which can differ between
+            // game builds; reading a deleted entity's address also crashes the game.
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            return e.Position;
         }
 
         public static Quaternion ReadQuaternion(this Entity e)
@@ -84,7 +89,8 @@ namespace RageCoop.Client
 
         public static Vector3 ReadVelocity(this Ped e)
         {
-            return ReadVector3(e.MemoryAddress + VelocityOffset);
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            return e.Velocity;
         }
 
         public static Vector3 ReadVector3(IntPtr address)

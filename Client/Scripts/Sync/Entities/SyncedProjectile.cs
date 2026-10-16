@@ -101,6 +101,7 @@ namespace RageCoop.Client
 
             if (MainProjectile == null || !MainProjectile.Exists())
             {
+                if (_untracked) return;
                 CreateProjectile();
                 return;
             }
@@ -109,6 +110,8 @@ namespace RageCoop.Client
             MainProjectile.Rotation = Rotation;
             LastUpdated = Ticked;
         }
+
+        private bool _untracked;
 
         private void CreateProjectile()
         {
@@ -128,6 +131,13 @@ namespace RageCoop.Client
             Call(SHOOT_SINGLE_BULLET_BETWEEN_COORDS_IGNORE_ENTITY, Position.X, Position.Y, Position.Z,
                 end.X, end.Y, end.Z, 0, 1, WeaponHash, owner?.Handle ?? 0, 1, 0, -1);
             var ps = World.GetAllProjectiles();
+            // The projectile list can be empty or unreadable on some ScriptHookVDotNet builds. The shot
+            // is already fired, so let it fly on its own instead of firing again on every update.
+            if (ps.Length == 0)
+            {
+                _untracked = true;
+                return;
+            }
             MainProjectile = ps[ps.Length - 1];
             MainProjectile.Position = Position;
             MainProjectile.Rotation = Rotation;

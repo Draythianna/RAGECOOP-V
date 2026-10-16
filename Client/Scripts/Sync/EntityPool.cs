@@ -101,6 +101,9 @@ namespace RageCoop.Client
             {
                 Log.Debug($"Creating SyncEntity for player, handle:{p.Handle}");
                 var c = new SyncedPed(p);
+                // Reuse the ID sent in the handshake so our ped matches what the server registered.
+                if (LocalPlayerID != 0)
+                    c.ID = LocalPlayerID;
                 LocalPlayerID = c.OwnerID = c.ID;
                 Add(c);
                 Log.Debug($"Local player ID is:{c.ID}");
