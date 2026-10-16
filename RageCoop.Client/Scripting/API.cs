@@ -101,7 +101,12 @@ namespace RageCoop.Client.Scripting
                 List<Action<CustomEventReceivedArgs>> handlers;
                 if (CustomEventHandlers.TryGetValue(p.Hash, out handlers))
                 {
-                    handlers.ForEach((x) => { x.Invoke(args); });
+                    // Run every handler even if one throws, so one broken handler can't swallow the event for the rest.
+                    foreach (var x in handlers.ToArray())
+                    {
+                        try { x.Invoke(args); }
+                        catch (Exception ex) { ShvdnWorkarounds.LogOnce("evhandler:" + p.Hash + ":" + x.Method.Name, $"Custom event handler {x.Method.DeclaringType?.FullName}.{x.Method.Name} threw: {ex}"); }
+                    }
                 }
             }
             #endregion

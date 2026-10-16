@@ -82,6 +82,11 @@ namespace RageCoop.Client
                     Security.Regen();
                     GetServerPublicKey(address);
 
+                    // Pick the local player ID now so the server registers the real ped ID; before
+                    // AddPlayer() has run it is still 0 (players invisible / not seen as players).
+                    if (Main.LocalPlayerID == 0)
+                        Main.LocalPlayerID = EntityPool.RequestNewID();
+
                     // Send HandshakePacket
                     NetOutgoingMessage outgoingMessage = Client.CreateMessage();
                     var handshake=new Packets.Handshake()

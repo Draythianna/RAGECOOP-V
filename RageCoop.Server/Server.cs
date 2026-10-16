@@ -492,10 +492,27 @@ namespace RageCoop.Server
                 connection.Deny("Username contains special chars!");
                 return;
             }
-            if (Clients.Values.Any(x => x.Username.ToLower() == packet.Username.ToLower()))
+            lock (Clients)
             {
-                connection.Deny("Username is already taken!");
-                return;
+                // A session left behind by an unclean disconnect (game crash, timeout) would otherwise
+                // block the name or ped ID until the server restarts. Clean it up; refuse only live ones.
+                foreach (var stale in Clients.Values.Where(x => (x.Username.ToLower() == packet.Username.ToLower() || x.ID == packet.PedID)
+                                                                 && x.Connection?.Status != NetConnectionStatus.Connected).ToList())
+                {
+                    Logger?.Warning($"Removing stale session for {stale.Username} (ID {stale.ID}) before handshake");
+                    try { SendPlayerDisconnectPacket(stale); }
+                    catch (Exception ex) { Logger?.Error(ex); Clients.Remove(stale.NetID); }
+                }
+                if (Clients.Values.Any(x => x.Username.ToLower() == packet.Username.ToLower()))
+                {
+                    connection.Deny("Username is already taken!");
+                    return;
+                }
+                if (packet.PedID != 0 && Clients.Values.Any(x => x.ID == packet.PedID))
+                {
+                    connection.Deny("Your player ID is already in use. Please reconnect.");
+                    return;
+                }
             }
             string passhash;
             try

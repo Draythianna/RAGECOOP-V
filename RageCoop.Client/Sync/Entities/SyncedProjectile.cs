@@ -68,6 +68,7 @@ namespace RageCoop.Client
 
             if (MainProjectile == null || !MainProjectile.Exists())
             {
+                if (_untracked) { return; }
                 CreateProjectile();
                 return;
             }
@@ -76,17 +77,22 @@ namespace RageCoop.Client
             LastUpdated=Main.Ticked;
         }
 
+        private bool _untracked;
+
         private void CreateProjectile()
         {
             Asset=new WeaponAsset(Hash);
             if (!Asset.IsLoaded) { Asset.Request(); }
             World.ShootBullet(Position,Position+Velocity,(Shooter=EntityPool.GetPedByID(ShooterID))?.MainPed,Asset,0);
             var ps = World.GetAllProjectiles();
+            // The list can be empty (see ShvdnWorkarounds.CheckProjectilePool). The shot is already
+            // fired, so let it fly on its own instead of firing again on every update.
+            if (ps.Length == 0) { _untracked = true; return; }
             MainProjectile=ps[ps.Length-1];
             if (Hash==(WeaponHash)VehicleWeaponHash.Tank)
             {
                 var v = Shooter?.MainPed?.CurrentVehicle;
-                if (v!=null)
+                if (v!=null && v.Bones.Count > 35)
                 {
                     World.CreateParticleEffectNonLooped(SyncEvents.CorePFXAsset, "muz_tank", v.GetMuzzleInfo().Position, v.Bones[35].ForwardVector.ToEulerRotation(v.Bones[35].UpVector), 1);
                 }
