@@ -293,7 +293,14 @@ namespace RageCoop.Client
         }
         internal static void Connected()
         {
-            Memory.ApplyPatches();
+            try
+            {
+                Memory.ApplyPatches();
+            }
+            catch (System.Exception ex)
+            {
+                Logger.Error("Failed to apply memory patches on connect: ", ex);
+            }
             if (Settings.Voice && !Voice.WasInitialized())
             {
                 Voice.Init();
@@ -396,13 +403,23 @@ namespace RageCoop.Client
 
         private string KillMessage()
         {
-            if (P.Killer != null)
+            // Must never throw: it runs while handling the player's death.
+            var me = PlayerList.GetPlayer(LocalPlayerID)?.Username ?? "Unknown";
+            try
             {
-                var killer = EntityPool.GetPedByHandle(P.Killer.Handle);
-                if (killer != null && killer.ID == killer.Owner.ID)
-                    return $"~h~{PlayerList.GetPlayer(LocalPlayerID).Username}~h~ was killed by ~h~{killer.Owner.Username}~h~ ({P.CauseOfDeath})";
+                var killerEntity = P?.Killer;
+                if (killerEntity != null && killerEntity.Handle != 0)
+                {
+                    var killer = EntityPool.GetPedByHandle(killerEntity.Handle);
+                    if (killer?.Owner != null && killer.ID == killer.Owner.ID)
+                        return $"~h~{me}~h~ was killed by ~h~{killer.Owner.Username ?? "Unknown"}~h~ ({P.CauseOfDeath})";
+                }
             }
-            return $"~h~{PlayerList.GetPlayer(LocalPlayerID).Username}~h~ died";
+            catch (System.Exception ex)
+            {
+                Logger.Error("Could not determine who killed the player: ", ex);
+            }
+            return $"~h~{me}~h~ died";
         }
     }
 }
