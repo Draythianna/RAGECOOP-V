@@ -68,6 +68,7 @@
     <Compile Include="Sync\Voice.cs" />
     <Compile Include="Util\AddOnDataProvider.cs" />
     <Compile Include="Util\Memory.cs" />
+    <Compile Include="Util\ShvdnWorkarounds.cs" />
     <Compile Include="Util\NativeCaller.cs" />
     <Compile Include="Util\PedConfigFlags.cs" />
     <Compile Include="Util\PedExtensions.cs" />

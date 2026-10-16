@@ -310,7 +310,9 @@ namespace RageCoop.Client
 #endif
             allPeds = World.GetAllPeds();
             allVehicles = World.GetAllVehicles();
-            allProjectiles = World.GetAllProjectiles();
+            ShvdnWorkarounds.CheckProjectilePool();
+            try { allProjectiles = World.GetAllProjectiles(); }
+            catch (Exception) { allProjectiles = new Projectile[0]; }
             vehStatesPerFrame = allVehicles.Length * 2 / (int)Game.FPS + 1;
             pedStatesPerFrame = allPeds.Length * 2 / (int)Game.FPS + 1;
 #if BENCHMARK

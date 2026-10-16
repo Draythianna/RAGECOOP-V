@@ -24,10 +24,25 @@ namespace RageCoop.Client
             NativeMemory.UninstallSelectionWheelsPatch();
         }
 
-        public static Vector3 ReadPosition(this Entity e) => ReadVector3(e.MemoryAddress + PositionOffset);
-        public static Quaternion ReadQuaternion(this Entity e) => Quaternion.RotationMatrix(e.Matrix);
+        // Reading through a deleted entity's memory address crashes the game, so these fall back to
+        // the regular natives when the entity is gone or has no address.
+        public static Vector3 ReadPosition(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            // Read through the native rather than a fixed memory offset, which can differ between game builds.
+            return e.Position;
+        }
+        public static Quaternion ReadQuaternion(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Quaternion.Identity;
+            return Quaternion.RotationMatrix(e.Matrix);
+        }
         public static Vector3 ReadRotation(this Entity e) => ToEulerDegrees(e.ReadQuaternion());
-        public static Vector3 ReadVelocity(this Ped e) => ReadVector3(e.MemoryAddress + VelocityOffset);
+        public static Vector3 ReadVelocity(this Ped e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            return e.Velocity;
+        }
 
         public static Vector3 ToEulerDegrees(Quaternion q)
         {

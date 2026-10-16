@@ -77,6 +77,9 @@ namespace RageCoop.Client
                 }
 
                 if (!Main.Settings.ShowPlayerBlip && (byte)BlipColor != 255) BlipColor = (BlipColor)255;
+                // 255 means "no blip". Players should still get one while "Show player blip" is on,
+                // so fall back to the default player colour when none has arrived.
+                if (IsPlayer && Main.Settings.ShowPlayerBlip && (byte)BlipColor == 255) BlipColor = GTA.BlipColor.White;
                 if ((byte)BlipColor == 255 && PedBlip != null)
                 {
                     PedBlip.Delete();
@@ -242,7 +245,7 @@ namespace RageCoop.Client
             Function.Call(Hash.SET_PED_CAN_BE_TARGETTED_BY_PLAYER, MainPed.Handle, Game.Player, true);
             Function.Call(Hash.SET_PED_GET_OUT_UPSIDE_DOWN_VEHICLE, MainPed.Handle, false);
             Function.Call(Hash.SET_CAN_ATTACK_FRIENDLY, MainPed.Handle, true, true);
-            Function.Call(Hash.SET_PED_IS_IGNORED_BY_AUTO_OPEN_DOORS, false);
+            Function.Call(Hash.SET_PED_IS_IGNORED_BY_AUTO_OPEN_DOORS, MainPed.Handle, false);
             Function.Call(Hash.SET_PED_CAN_EVASIVE_DIVE, MainPed.Handle, false);
 
             MainPed.SetConfigFlag((int)PedConfigFlags.CPED_CONFIG_FLAG_DrownsInWater, false);
