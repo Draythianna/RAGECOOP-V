@@ -45,6 +45,35 @@ public partial class Server
             return;
         }
 
+        // A session that ended uncleanly can leave the player listed by name or ped ID. Registering
+        // them again would then throw on the duplicate keys further down, after the connection was
+        // already approved, leaving the player connected but invisible to everyone else.
+        // Live sessions were rejected above, so anything found here is a leftover.
+        lock (ClientsByNetHandle)
+        {
+            if (ClientsByNetHandle.ContainsKey(connection.RemoteUniqueIdentifier))
+            {
+                Logger?.Warning($"Duplicate handshake from {connection.RemoteEndPoint}, ignoring");
+                return;
+            }
+            if (ClientsByName.TryGetValue(packet.Username.ToLower(), out var staleByName))
+            {
+                Logger?.Info($"Player {packet.Username} reconnecting, cleaning up old session");
+                PlayerDisconnected(staleByName);
+            }
+            if (ClientsByID.TryGetValue(packet.PedID, out var staleByID))
+            {
+                if (ClientsByNetHandle.ContainsKey(staleByID.NetHandle))
+                {
+                    Logger?.Warning($"Ped ID {packet.PedID} from {packet.Username} is already used by {staleByID.Username}");
+                    connection.Deny("Your player ID is already in use. Please reconnect; if this keeps happening, update your RageCoop client.");
+                    return;
+                }
+                Logger?.Info($"Cleaning up stale session of {staleByID.Username} (ped ID {packet.PedID})");
+                PlayerDisconnected(staleByID);
+            }
+        }
+
         try
         {
             Security.AddConnection(connection.RemoteEndPoint, packet.AesKeyCrypted, packet.AesIVCrypted);

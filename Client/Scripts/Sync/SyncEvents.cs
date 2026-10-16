@@ -169,7 +169,9 @@ namespace RageCoop.Client
                         // Veh weapon sync
                         if (endPos == default)
                         {
-                            var veh = c.MainPed.CurrentVehicle;
+                            // The shooter's ped may not exist locally yet.
+                            var veh = c.MainPed?.CurrentVehicle;
+                            if (veh == null) return true;
                             var b = veh.GetMuzzleBone(vehWeap);
                             if (b == null)
                             {

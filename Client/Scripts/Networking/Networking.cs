@@ -127,6 +127,11 @@ namespace RageCoop.Client
                             Security.SetServerPublicKey(publicKey.Modulus, publicKey.Exponent);
                         }
 
+                        // Pick the local player ID now so the server registers the real ped ID; before
+                        // AddPlayer() has run it is still 0 (players invisible / not seen as players).
+                        if (LocalPlayerID == 0)
+                            LocalPlayerID = EntityPool.RequestNewID();
+
                         // Send handshake packet
                         var outgoingMessage = Peer.CreateMessage();
                         var handshake = new Packets.Handshake
