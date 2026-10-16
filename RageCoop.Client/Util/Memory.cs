@@ -29,8 +29,8 @@ namespace RageCoop.Client
         public static Vector3 ReadPosition(this Entity e)
         {
             if (e == null || !e.Exists()) return Vector3.Zero;
-            var address = e.MemoryAddress;
-            return address == IntPtr.Zero ? e.Position : ReadVector3(address + PositionOffset);
+            // Read through the native rather than a fixed memory offset, which can differ between game builds.
+            return e.Position;
         }
         public static Quaternion ReadQuaternion(this Entity e)
         {
@@ -41,8 +41,7 @@ namespace RageCoop.Client
         public static Vector3 ReadVelocity(this Ped e)
         {
             if (e == null || !e.Exists()) return Vector3.Zero;
-            var address = e.MemoryAddress;
-            return address == IntPtr.Zero ? e.Velocity : ReadVector3(address + VelocityOffset);
+            return e.Velocity;
         }
 
         public static Vector3 ToEulerDegrees(Quaternion q)
