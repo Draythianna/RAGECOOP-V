@@ -120,6 +120,13 @@ namespace RageCoop.Client
                             Security.SetServerPublicKey(publicKey.Modulus, publicKey.Exponent);
                         }
 
+                        // Generate local player ID now so the server receives the real ped ID in the handshake.
+                        // Previously this could be 0 because AddPlayer() hadn't run yet, which caused the server
+                        // to never identify this player's ped as a player (invisible players, broken
+                        // OnPlayerUpdate / race start, NPC streaming distance applied to players).
+                        if (Main.LocalPlayerID == 0)
+                            Main.LocalPlayerID = EntityPool.RequestNewID();
+
                         // Send handshake packet
                         NetOutgoingMessage outgoingMessage = Peer.CreateMessage();
                         var handshake = new Packets.Handshake()
