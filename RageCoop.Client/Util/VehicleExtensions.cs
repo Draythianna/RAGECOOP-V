@@ -144,7 +144,7 @@ namespace RageCoop.Client
             short burstedTires = 0;
             foreach (VehicleWheel wheel in veh.Wheels.GetAllWheels())
             {
-                if (wheel.IsBurst)
+                if (wheel.IsBurstCompat())
                 {
                     burstedTires |= (short)(1 << (int)wheel.BoneId);
                 }
@@ -159,6 +159,15 @@ namespace RageCoop.Client
                 LeftHeadLightBroken = (byte)(veh.IsLeftHeadLightBroken ? 1 : 0),
                 RightHeadLightBroken = (byte)(veh.IsRightHeadLightBroken ? 1 : 0)
             };
+        }
+
+        // VehicleWheel.IsBurst was renamed to IsBursted in ScriptHookVDotNet 3.9, so calling it from a
+        // build compiled against 3.7 throws MissingMethodException there. The native works everywhere.
+        private static bool IsBurstCompat(this VehicleWheel wheel)
+        {
+            int index = wheel.Index;
+            if (index < 0) return false;
+            return Function.Call<bool>(Hash.IS_VEHICLE_TYRE_BURST, wheel.Vehicle, index, false);
         }
 
         public static void SetDamageModel(this Vehicle veh, VehicleDamageModel model, bool leavedoors = true)
@@ -206,13 +215,13 @@ namespace RageCoop.Client
             {
                 if ((model.BurstedTires & (short)(1 << (int)wheel.BoneId)) != 0)
                 {
-                    if (!wheel.IsBurst)
+                    if (!wheel.IsBurstCompat())
                     {
                         wheel.Puncture();
                         wheel.Burst();
                     }
                 }
-                else if (wheel.IsBurst)
+                else if (wheel.IsBurstCompat())
                 {
                     wheel.Fix();
                 }
