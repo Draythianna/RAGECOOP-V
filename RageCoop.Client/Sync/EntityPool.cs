@@ -110,6 +110,9 @@ namespace RageCoop.Client
             {
                 Main.Logger.Debug($"Creating SyncEntity for player, handle:{p.Handle}");
                 SyncedPed c = new SyncedPed(p);
+                // Reuse the ID sent in the handshake so our ped matches what the server registered.
+                if (Main.LocalPlayerID != 0)
+                    c.ID = Main.LocalPlayerID;
                 Main.LocalPlayerID=c.OwnerID=c.ID;
                 Add(c);
                 Main.Logger.Debug($"My player ID is:{c.ID}");
@@ -294,7 +297,9 @@ namespace RageCoop.Client
 #endif
             allPeds = World.GetAllPeds();
             allVehicles=World.GetAllVehicles();
-            allProjectiles=World.GetAllProjectiles();
+            ShvdnWorkarounds.CheckProjectilePool();
+            try { allProjectiles=World.GetAllProjectiles(); }
+            catch (Exception) { allProjectiles=new Projectile[0]; }
             vehStatesPerFrame=allVehicles.Length*5/(int)Game.FPS+1;
             pedStatesPerFrame=allPeds.Length*5/(int)Game.FPS+1;
 
