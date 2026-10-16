@@ -40,7 +40,9 @@ namespace RageCoop.Client
             // Weapon/radio wheel slow-mo patch
             // Thanks @CamxxCore, https://github.com/CamxxCore/GTAVWeaponWheelMod
             var resultPtr = Game.FindPattern("\x38\x51\x64\x74\x19", "xxxxx");
-            if (resultPtr == IntPtr.Zero) { throw new NotSupportedException("Can't find memory pattern to patch weapon/radio slow-mo"); }
+            // Skip the patch if the pattern isn't found (other game builds): a throwing static
+            // constructor breaks every Memory call, including the position reads.
+            if (resultPtr == IntPtr.Zero) { return; }
             byte* result = (byte*)resultPtr.ToPointer();
             var address = result + 26;
             address = address + *(int*)address + 4u;
@@ -51,15 +53,15 @@ namespace RageCoop.Client
         }
         public static void ApplyPatches()
         {
-            VignettingPatch.Install();
-            VignettingCallPatch.Install();
-            TimeScalePatch.Install();
+            VignettingPatch?.Install();
+            VignettingCallPatch?.Install();
+            TimeScalePatch?.Install();
         }
         public static void RestorePatches()
         {
-            VignettingPatch.Uninstall();
-            VignettingCallPatch.Uninstall();
-            TimeScalePatch.Uninstall();
+            VignettingPatch?.Uninstall();
+            VignettingCallPatch?.Uninstall();
+            TimeScalePatch?.Uninstall();
         }
         #region PATCHES
         #endregion
@@ -72,10 +74,25 @@ namespace RageCoop.Client
         private const byte XOR_32_64 = 0x31;
         private const byte RET = 0xC3;
         #endregion
-        public static Vector3 ReadPosition(this Entity e) => ReadVector3(e.MemoryAddress + PositionOffset);
-        public static Quaternion ReadQuaternion(this Entity e) => Quaternion.RotationMatrix(e.Matrix);
+        // Reading through a deleted entity's memory address crashes the game, so these fall back to
+        // the regular natives when the entity is gone or has no address.
+        public static Vector3 ReadPosition(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            // Read through the native rather than a fixed memory offset, which can differ between game builds.
+            return e.Position;
+        }
+        public static Quaternion ReadQuaternion(this Entity e)
+        {
+            if (e == null || !e.Exists()) return Quaternion.Identity;
+            return Quaternion.RotationMatrix(e.Matrix);
+        }
         public static Vector3 ReadRotation(this Entity e) => e.ReadQuaternion().ToEulerDegrees();
-        public static Vector3 ReadVelocity(this Ped e) => ReadVector3(e.MemoryAddress + VelocityOffset);
+        public static Vector3 ReadVelocity(this Ped e)
+        {
+            if (e == null || !e.Exists()) return Vector3.Zero;
+            return e.Velocity;
+        }
         public static Vector3 ReadVector3(IntPtr address)
         {
             float* ptr = (float*)address.ToPointer();
