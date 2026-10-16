@@ -214,12 +214,14 @@ namespace RageCoop.Client
         public static void HandleVehicleBulletShot(Packets.VehicleBulletShot p)
         {
             HandleBulletShot(p.StartPosition, p.EndPosition, p.WeaponHash, p.OwnerID);
-            var v = EntityPool.GetPedByID(p.OwnerID)?.MainPed.CurrentVehicle;
-            if (v == null) { return; }
+            // The shooter's ped may not exist locally yet, and not every vehicle has bone 35.
+            var v = EntityPool.GetPedByID(p.OwnerID)?.MainPed?.CurrentVehicle;
+            if (v == null || !v.Exists()) { return; }
             var b = v.Bones[p.Bone];
+            var up = v.Bones.Count > 35 ? v.Bones[35].UpVector : v.UpVector;
             World.CreateParticleEffectNonLooped(CorePFXAsset,
                 WeaponUtil.GetFlashFX((WeaponHash)p.WeaponHash),
-                b.Position, b.ForwardVector.ToEulerRotation(v.Bones[35].UpVector), 1);
+                b.Position, b.ForwardVector.ToEulerRotation(up), 1);
         }
         public static void HandleEvent(PacketType type, NetIncomingMessage msg)
         {

@@ -41,7 +41,9 @@ namespace RageCoop.Client
             // Weapon/radio wheel slow-mo patch
             // Thanks @CamxxCore, https://github.com/CamxxCore/GTAVWeaponWheelMod
             var result = MemScanner.FindPatternBmh("\x38\x51\x64\x74\x19", "xxxxx");
-            if (result == null) { throw new NotSupportedException("Can't find memory pattern to patch weapon/radio slow-mo"); }
+            // Skip the patch if the pattern isn't found (other game builds): a throwing static
+            // constructor breaks every Memory call, including the position reads.
+            if (result == null) { return; }
             var address = result + 26;
             address = address + *(int*)address + 4u;
             VignettingPatch = new MemPatch(address, new byte[] { RET, 0x90, 0x90, 0x90, 0x90 });
@@ -51,15 +53,15 @@ namespace RageCoop.Client
         }
         public static void ApplyPatches()
         {
-            VignettingPatch.Install();
-            VignettingCallPatch.Install();
-            TimeScalePatch.Install();
+            VignettingPatch?.Install();
+            VignettingCallPatch?.Install();
+            TimeScalePatch?.Install();
         }
         public static void RestorePatches()
         {
-            VignettingPatch.Uninstall();
-            VignettingCallPatch.Uninstall();
-            TimeScalePatch.Uninstall();
+            VignettingPatch?.Uninstall();
+            VignettingCallPatch?.Uninstall();
+            TimeScalePatch?.Uninstall();
         }
         #region PATCHES
         #endregion
@@ -77,8 +79,8 @@ namespace RageCoop.Client
         public static Vector3 ReadPosition(this Entity e)
         {
             if (e == null || !e.Exists()) return Vector3.Zero;
-            var address = e.MemoryAddress;
-            return address == IntPtr.Zero ? e.Position : ReadVector3(address + PositionOffset);
+            // Read through the native rather than a fixed memory offset, which can differ between game builds.
+            return e.Position;
         }
         public static Quaternion ReadQuaternion(this Entity e)
         {
@@ -89,8 +91,7 @@ namespace RageCoop.Client
         public static Vector3 ReadVelocity(this Ped e)
         {
             if (e == null || !e.Exists()) return Vector3.Zero;
-            var address = e.MemoryAddress;
-            return address == IntPtr.Zero ? e.Velocity : ReadVector3(address + VelocityOffset);
+            return e.Velocity;
         }
         public static Vector3 ReadVector3(IntPtr address)
         {
