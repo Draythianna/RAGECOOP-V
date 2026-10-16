@@ -141,9 +141,8 @@ namespace RageCoop.Client
             }
             catch (Exception ex)
             {
-#if DEBUG
-                Main.Logger.Error(ex);
-#endif
+                // Log each distinct sync error once; these used to be swallowed in release builds.
+                ShvdnWorkarounds.LogOnce("dosync:" + ex.GetType().Name + ex.Message, "EntityPool.DoSync threw: " + ex);
             }
 
             if (Networking.ShowNetworkInfo)
